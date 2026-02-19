@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NightLife Calendar — Boston North</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #e040fb;
+    --accent2: #7c4dff;
+    --gold: #ffd740;
+    --teal: #1de9b6;
+    --red: #ff5252;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --glow: rgba(224,64,251,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0a0d1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(224,64,251,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: 80px;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(124,77,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .logo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .logo-sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .legend-item:hover { border-color: var(--accent); color: var(--text); }
+  .legend-item.active { border-color: currentColor; color: var(--text); background: var(--surface2); }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .month-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    min-width: 220px;
+    text-align: center;
+  }
+  .view-toggle {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+  }
+  .toggle-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .toggle-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* CALENDAR GRID */
+  .calendar-wrap { padding: 24px 32px; }
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+  }
+  .weekday-label {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 0;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .day-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-height: 100px;
+    padding: 8px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .day-cell:hover { border-color: #3a3a5a; }
+  .day-cell.other-month { opacity: 0.35; }
+  .day-cell.today { border-color: var(--accent); }
+  .day-cell.today .day-num { color: var(--accent); }
+  .day-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .events-list { display: flex; flex-direction: column; gap: 2px; }
+  .event-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    line-height: 1.5;
+  }
+  .event-chip:hover { opacity: 0.85; filter: brightness(1.2); }
+  .more-events {
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .more-events:hover { color: var(--accent); }
+
+  /* LIST VIEW */
+  .list-view { padding: 24px 32px; }
+  .list-month-group { margin-bottom: 32px; }
+  .list-date-header {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .list-event-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #1e1e2a;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+    padding-left: 8px;
+  }
+  .list-event-row:hover { background: var(--surface); }
+  .list-event-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .list-event-info { flex: 1; }
+  .list-event-name { font-weight: 700; font-size: 15px; }
+  .list-event-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .list-event-time { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    padding: 28px;
+    position: relative;
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .modal-venue {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .modal-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .modal-detail .icon { color: var(--accent); }
+  .modal-desc {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .modal-link {
+    display: inline-block;
+    margin-top: 18px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: opacity 0.2s;
+  }
+  .modal-link:hover { opacity: 0.85; }
+
+  /* CATEGORIES colors */
+  .cat-karaoke   { --c: #ff9800; }
+  .cat-goth      { --c: #e040fb; }
+  .cat-rock      { --c: #ff5252; }
+  .cat-jazz      { --c: #1de9b6; }
+  .cat-metal     { --c: #7c4dff; }
+  .cat-dance     { --c: #40c4ff; }
+  .cat-newwave   { --c: #f06292; }
+
+  @media (max-width: 700px) {
+    .controls { padding: 12px 16px; }
+    .calendar-wrap, .list-view { padding: 12px 8px; }
+    .day-cell { min-height: 70px; padding: 5px; }
+    .event-chip { font-size: 9px; }
+    header { padding: 16px; }
+    .legend { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-title">NIGHTLIFE CALENDAR</div>
+    <div class="logo-sub">Boston North · Greater Manchester NH · Salem · Lowell</div>
+  </div>
+  <div class="legend" id="legend"></div>
+</header>
+
+<div class="controls">
+  <div class="month-nav">
+    <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div class="view-toggle">
+    <button class="toggle-btn active" id="calBtn" onclick="setView('cal')">Calendar</button>
+    <button class="toggle-btn" id="listBtn" onclick="setView('list')">List</button>
+  </div>
+</div>
+
+<div id="calView" class="calendar-wrap"></div>
+<div id="listView" class="list-view" style="display:none"></div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-badge" id="mBadge"></div>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-venue" id="mVenue"></div>
+    <div class="modal-detail" id="mDate"><span class="icon">📅</span><span></span></div>
+    <div class="modal-detail" id="mTime"><span class="icon">🕐</span><span></span></div>
+    <div class="modal-detail" id="mAddr"><span class="icon">📍</span><span></span></div>
+    <div class="modal-detail" id="mPrice"><span class="icon">🎟</span><span></span></div>
+    <div class="modal-desc" id="mDesc"></div>
+    <a class="modal-link" id="mLink" href="#" target="_blank">More Info →</a>
+  </div>
+</div>
+
+<script>
+// ─── Categories ───────────────────────────────────────────────────────
+const CATS = {
+  karaoke: { label: 'Karaoke', color: '#ff9800' },
+  goth:    { label: 'Goth / Industrial', color: '#e040fb' },
+  rock:    { label: 'Rock / Metal', color: '#ff5252' },
+  jazz:    { label: 'Jazz / Blues', color: '#1de9b6' },
+  dance:   { label: 'Dancing', color: '#40c4ff' },
+  newwave: { label: 'New Wave / Alt', color: '#f06292' },
+  metal:   { label: 'Metal', color: '#7c4dff' },
+};
+
+// ─── Event database ──────────────────────────────────────────────────
+// Each event: { id, name, venue, address, cat, time, price, desc, url, recurrence }
+// recurrence: { type: 'weekly'|'monthly'|'biweekly'|'nthweekday', day:0-6, nth:1-5 }
+// or dates: [YYYY-MM-DD, ...]
+
+const EVENTS = [
+  // ── XMORTIS (2nd Friday of month, Middle East Downstairs)
+  {
+    id: 'xmortis',
+    name: 'Xmortis',
+    venue: 'Middle East Downstairs',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'goth',
+    time: '9:00 PM – 2:00 AM',
+    price: '$13 before 10pm / $15 after',
+    desc: "Boston's longest-running Friday goth night. DJ Chris Ewen & guests spin goth, industrial, darkwave, and EBM. Dress code: all black minimum. 18+.",
+    url: 'https://mideastclub.com/downstairs/',
+    recurrence: { type: 'nthweekday', day: 5, nth: 2 }, // 2nd Friday
+  },
+
+  // ── MANRAY recurring nights (Wed–Sat)
+  {
+    id: 'manray-wed',
+    name: 'ManRay: Crypt (Goth Night)',
+    venue: 'ManRay',
+    address: '40 Prospect St, Cambridge, MA',
+    cat: 'goth',
+    time: '9:00 PM – 1:00 AM',
+    price: '$12–$15',
+    desc: 'Wednesday goth night at the legendary ManRay. Dark beats, goth culture, and underground industrial. 19+.',
+    url: 'https://manrayclub.com/',
+    recurrence: { type: 'weekly', day: 3 }, // Wed
+  },
+  {
+    id: 'manray-thu',
+    name: 'ManRay: Campus (Queer Night)',
+    venue: 'ManRay',
+    address: '40 Prospect St, Cambridge, MA',
+    cat: 'dance',
+    time: '10:00 PM – 2:00 AM',
+    price: '$12–$15',
+    desc: 'Thursday queer dance night, a revival of the legendary Campus series for gay men and their friends. All are welcome. 19+.',
+    url: 'https://manrayclub.com/',
+    recurrence: { type: 'weekly', day: 4 }, // Thu
+  },
+  {
+    id: 'manray-fri',
+    name: 'ManRay: Chrome (Industrial Night)',
+    venue: 'ManRay',
+    address: '40 Prospect St, Cambridge, MA',
+    cat: 'goth',
+    time: '9:00 PM – 2:00 AM',
+    price: '$12–$15',
+    desc: 'Friday fetish-adjacent industrial night. Heavy electronics, EBM, and dark dance beats. 19+.',
+    url: 'https://manrayclub.com/',
+    recurrence: { type: 'weekly', day: 5 }, // Fri
+  },
+  {
+    id: 'manray-sat',
+    name: 'ManRay: Heroes (New Wave Night)',
+    venue: 'ManRay',
+    address: '40 Prospect St, Cambridge, MA',
+    cat: 'newwave',
+    time: '9:00 PM – 2:00 AM',
+    price: '$12–$15',
+    desc: "Saturday '80s new wave and electro party with DJ Chris Ewen. Bowie, Bauhaus, and everything in between. 19+.",
+    url: 'https://manrayclub.com/',
+    recurrence: { type: 'weekly', day: 6 }, // Sat
+  },
+
+  // ── DARQ SALEM (4th Saturday at Koto, 90 Washington St)
+  {
+    id: 'darq-salem',
+    name: 'Darq',
+    venue: 'Koto Asian Fusion',
+    address: '90 Washington St, Salem, MA',
+    cat: 'goth',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Cover varies',
+    desc: "Salem's longest-running goth event. DJ Vudu:DJ and guests spin industrial, EBM, goth, darkwave, and dark electronic. The small dance floor gets packed.",
+    url: 'https://vampfangs.com/blogs/news/salem-goth-nights-the-best-dark-club-events-in-salem-ma',
+    recurrence: { type: 'nthweekday', day: 6, nth: 4 }, // 4th Saturday
+  },
+
+  // ── RESURRECTION at Jewel (2nd Saturday, Manchester NH)
+  {
+    id: 'resurrection',
+    name: 'Resurrection',
+    venue: 'Jewel Music Venue',
+    address: '61 Canal St, Manchester, NH',
+    cat: 'goth',
+    time: '9:00 PM – 1:00 AM',
+    price: '$10, 18+',
+    desc: 'Monthly goth, industrial & dark dance night at Manchester NH\'s premier alternative venue. Second Saturdays.',
+    url: 'https://jewelmusicvenue.com/',
+    recurrence: { type: 'nthweekday', day: 6, nth: 2 }, // 2nd Saturday
+  },
+
+  // ── YEE DYNASTY KARAOKE (Tue–Sat nightly, Manchester NH)
+  {
+    id: 'yee-karaoke-tue',
+    name: 'Karaoke at the Yee',
+    venue: 'Yee Dynasty',
+    address: '830 S Willow St, Manchester, NH',
+    cat: 'karaoke',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Free',
+    desc: "Nightly karaoke at Manchester's beloved Chinese restaurant & lounge. Two different KJ companies rotate. Lively crowd, affordable drinks.",
+    url: 'https://www.yeedynasty.com/',
+    recurrence: { type: 'weekly', day: 2 }, // Tue
+  },
+  {
+    id: 'yee-karaoke-wed',
+    name: 'Karaoke at the Yee',
+    venue: 'Yee Dynasty',
+    address: '830 S Willow St, Manchester, NH',
+    cat: 'karaoke',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Free',
+    desc: 'Nightly karaoke at the Yee. JB Entertainment hosts Wed–Sat.',
+    url: 'https://www.yeedynasty.com/',
+    recurrence: { type: 'weekly', day: 3 },
+  },
+  {
+    id: 'yee-karaoke-thu',
+    name: 'Karaoke at the Yee',
+    venue: 'Yee Dynasty',
+    address: '830 S Willow St, Manchester, NH',
+    cat: 'karaoke',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Free',
+    desc: 'Nightly karaoke at the Yee.',
+    url: 'https://www.yeedynasty.com/',
+    recurrence: { type: 'weekly', day: 4 },
+  },
+  {
+    id: 'yee-karaoke-fri',
+    name: 'Karaoke at the Yee',
+    venue: 'Yee Dynasty',
+    address: '830 S Willow St, Manchester, NH',
+    cat: 'karaoke',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Free',
+    desc: 'Friday karaoke at the Yee. One of NH\'s best karaoke nights.',
+    url: 'https://www.yeedynasty.com/',
+    recurrence: { type: 'weekly', day: 5 },
+  },
+  {
+    id: 'yee-karaoke-sat',
+    name: 'Karaoke at the Yee',
+    venue: 'Yee Dynasty',
+    address: '830 S Willow St, Manchester, NH',
+    cat: 'karaoke',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Free',
+    desc: 'Saturday karaoke at the Yee. JB Entertainment hosts.',
+    url: 'https://www.yeedynasty.com/',
+    recurrence: { type: 'weekly', day: 6 },
+  },
+
+  // ── LAKESIDE INN KARAOKE (Wed & Sun, Wakefield MA)
+  {
+    id: 'lakeside-wed',
+    name: 'Karaoke at Lakeside Inn',
+    venue: 'Waves Bar at the Lakeside Inn',
+    address: '595 North Ave, Wakefield, MA',
+    cat: 'karaoke',
+    time: '9:00 PM – midnight',
+    price: 'Free',
+    desc: "Wednesday karaoke night with Mighty Cosmic D at the Lakeside Inn's bar. Attracts a fun local crowd. Live bands on Fri/Sat.",
+    url: 'https://www.lakesideinnwakefield.com',
+    recurrence: { type: 'weekly', day: 3 }, // Wed
+  },
+  {
+    id: 'lakeside-sun',
+    name: 'Karaoke at Lakeside Inn',
+    venue: 'Waves Bar at the Lakeside Inn',
+    address: '595 North Ave, Wakefield, MA',
+    cat: 'karaoke',
+    time: '9:00 PM – midnight',
+    price: 'Free',
+    desc: "Sunday karaoke at the Lakeside Inn's lakeside bar with Mighty Cosmic D. Popular with locals.",
+    url: 'https://www.lakesideinnwakefield.com',
+    recurrence: { type: 'weekly', day: 0 }, // Sun
+  },
+  // Live bands at Lakeside Fri/Sat
+  {
+    id: 'lakeside-fri',
+    name: 'Live Bands at Lakeside Inn',
+    venue: 'Waves Bar at the Lakeside Inn',
+    address: '595 North Ave, Wakefield, MA',
+    cat: 'rock',
+    time: '8:00 PM – midnight',
+    price: 'Free / small cover',
+    desc: 'Friday live band nights at the Lakeside Inn. Mix of rock, blues, and covers. Local bands, dance floor.',
+    url: 'https://www.lakesideinnwakefield.com',
+    recurrence: { type: 'weekly', day: 5 },
+  },
+  {
+    id: 'lakeside-sat',
+    name: 'Live Bands at Lakeside Inn',
+    venue: 'Waves Bar at the Lakeside Inn',
+    address: '595 North Ave, Wakefield, MA',
+    cat: 'rock',
+    time: '8:00 PM – midnight',
+    price: 'Free / small cover',
+    desc: 'Saturday live band nights at the Lakeside Inn. Dance floor, pool tables, lake views.',
+    url: 'https://www.lakesideinnwakefield.com',
+    recurrence: { type: 'weekly', day: 6 },
+  },
+
+  // ── JEWEL MUSIC VENUE (Manchester NH – Fri/Sat metal/rock shows)
+  {
+    id: 'jewel-fri',
+    name: 'Live Metal / Rock at Jewel',
+    venue: 'Jewel Music Venue',
+    address: '61 Canal St, Manchester, NH',
+    cat: 'metal',
+    time: '7:00 PM',
+    price: 'Varies',
+    desc: 'Weekly Friday shows at one of NH\'s best small venues. Known for metal, doom, hardcore, and heavy rock. 18+.',
+    url: 'https://jewelmusicvenue.com/',
+    recurrence: { type: 'weekly', day: 5 },
+  },
+  {
+    id: 'jewel-sat',
+    name: 'Live Metal / Rock at Jewel',
+    venue: 'Jewel Music Venue',
+    address: '61 Canal St, Manchester, NH',
+    cat: 'metal',
+    time: '7:00 PM',
+    price: 'Varies',
+    desc: 'Saturday shows at Jewel Music Venue — metal, progressive, alternative, and more. Check their Facebook for specific lineups.',
+    url: 'https://jewelmusicvenue.com/',
+    recurrence: { type: 'weekly', day: 6 },
+  },
+
+  // ── VAMPIRE LOUNGE SALEM (3rd Saturday)
+  {
+    id: 'vampire-lounge',
+    name: 'Vampire Lounge',
+    venue: 'Longboards (Upstairs)',
+    address: '76 Wharf St, Salem, MA',
+    cat: 'goth',
+    time: '9:00 PM – 1:00 AM',
+    price: 'Cover varies',
+    desc: 'Monthly dark elegant nightclub with large dance floor, glowing candles, and a private bar overlooking Salem harbor. Darkwave, goth, EBM, post-punk. DJs Kuro & Changeling.',
+    url: 'https://vampfangs.com/blogs/news/salem-goth-nights-the-best-dark-club-events-in-salem-ma',
+    recurrence: { type: 'nthweekday', day: 6, nth: 3 }, // 3rd Saturday
+  },
+
+  // ── MIDDLE EAST extra special shows (specific dates based on research)
+  {
+    id: 'me-househeavy',
+    name: 'House of Heavy',
+    venue: 'Middle East Downstairs',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'metal',
+    time: '8:00 PM',
+    price: '$22',
+    desc: 'Heavy music showcase at Middle East. Doom, sludge, and heavy rock. 21+.',
+    url: 'https://mideastclub.com/downstairs/',
+    dates: ['2026-03-21'],
+  },
+  {
+    id: 'me-diekrupps',
+    name: 'Die Krupps – 45th Anniversary',
+    venue: 'Middle East Downstairs',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'goth',
+    time: '6:00 PM',
+    price: '$43',
+    desc: 'Legendary German industrial metal band Die Krupps on their 45th anniversary tour. 18+.',
+    url: 'https://mideastclub.com/downstairs/',
+    dates: ['2026-04-01'],
+  },
+  {
+    id: 'me-bloodforbood',
+    name: 'Blood for Blood / Skinhead',
+    venue: 'Middle East Downstairs',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'rock',
+    time: '6:00 PM',
+    price: 'Varies',
+    desc: 'Hardcore punk showcase at Middle East Downstairs.',
+    url: 'https://mideastclub.com/downstairs/',
+    dates: ['2026-04-11'],
+  },
+
+  // ── MIDDLE EAST: Xmortis Vampy Valentines (already covered by recurrence + special date)
+  {
+    id: 'xmortis-vv',
+    name: 'Xmortis: Vampy Valentines',
+    venue: 'Middle East Downstairs',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'goth',
+    time: '9:00 PM – 2:00 AM',
+    price: '$13 / $15',
+    desc: 'Special Valentine\'s themed goth night with Xmortis at Middle East Downstairs. DJ Chris Ewen. 18+.',
+    url: 'https://mideastclub.com/downstairs/',
+    dates: ['2026-02-13'],
+  },
+
+  // ── Darq at Lowell (occasional – no fixed schedule found, marking as quarterly)
+  {
+    id: 'darq-lowell',
+    name: 'Darq (Special Event)',
+    venue: 'TBD Lowell Venue',
+    address: 'Lowell, MA',
+    cat: 'goth',
+    time: 'TBA',
+    price: 'TBA',
+    desc: 'Darq occasionally hosts special events in Lowell. Check their social media for announcements.',
+    url: 'https://vampfangs.com/blogs/news/salem-goth-nights-the-best-dark-club-events-in-salem-ma',
+    dates: ['2026-03-28', '2026-06-27'],
+  },
+
+  // ── JAZZ / BLUES at Middle East Zuzu (weekly)
+  {
+    id: 'zuzu-select',
+    name: 'Select (Dance / Electronic)',
+    venue: 'Middle East ZuZu',
+    address: '472 Massachusetts Ave, Cambridge, MA',
+    cat: 'dance',
+    time: '10:00 PM',
+    price: 'Varies',
+    desc: 'Late-night dance and electronic music events at ZuZu, the smaller bar attached to the Middle East.',
+    url: 'https://mideastclub.com/',
+    recurrence: { type: 'nthweekday', day: 6, nth: 4 }, // Approx 4th Sat
+  },
+
+  // ── OPEN MIC at Lakeside Inn (Thursdays)
+  {
+    id: 'lakeside-openmic',
+    name: 'Open Mic Night',
+    venue: 'Lakeside Inn (Lakeside Tavern)',
+    address: '595 North Ave, Wakefield, MA',
+    cat: 'rock',
+    time: '7:00 PM',
+    price: 'Free',
+    desc: 'Thursday open mic night at the Lakeside Tavern. All genres welcome — bring your guitar or just come listen.',
+    url: 'https://www.lakesideinnwakefield.com',
+    recurrence: { type: 'weekly', day: 4 }, // Thu
+  },
+
+  // ── Rex Theatre Manchester (rock/alt shows)
+  {
+    id: 'rex-shows',
+    name: 'Live Music at The Rex',
+    venue: 'The Rex Theatre',
+    address: '23 Amherst St, Manchester, NH',
+    cat: 'rock',
+    time: '7:00 PM',
+    price: 'Varies',
+    desc: 'The Rex Theatre hosts rock, alt, indie, and americana shows regularly. One of Manchester NH\'s best venues.',
+    url: 'https://www.rextheatre.org/',
+    recurrence: { type: 'weekly', day: 6 }, // most Saturdays
+  },
+
+  // ── Gulu Gulu Salem – Live Music
+  {
+    id: 'gulu-live',
+    name: 'Live Music at Gulu Gulu',
+    venue: 'Gulu Gulu Café',
+    address: '247 Essex St, Salem, MA',
+    cat: 'jazz',
+    time: '8:00 PM',
+    price: 'Free / $5',
+    desc: 'Eclectic live music at Salem\'s beloved Gulu Gulu Café. Jazz, folk, acoustic, and experimental acts most weekends.',
+    url: 'https://www.facebook.com/gulugulucafe',
+    recurrence: { type: 'weekly', day: 5 }, // Fridays
+  },
+
+  // ── Karaoke Saturdays in Malden (nearby)
+  {
+    id: 'malden-karaoke',
+    name: "Karaoke Night at Patrick's",
+    venue: "Patrick's Bar & Grill",
+    address: 'Malden, MA',
+    cat: 'karaoke',
+    time: '9:00 PM',
+    price: 'Free',
+    desc: "Saturday karaoke with Dave D and Friends in Malden. Popular local karaoke night.",
+    url: 'https://www.eventbrite.com/d/ma--wakefield/karaoke/',
+    recurrence: { type: 'weekly', day: 6 },
+  },
+
+  // ── House of Heavy at Middle East (monthly – 3rd Saturday)
+  {
+    id: 'boston-jazz',
+    name: 'Jazz & Blues Showcase',
+    venue: 'Various North Shore Venues',
+    address: 'North Shore, MA',
+    cat: 'jazz',
+    time: '7:00 PM',
+    price: 'Varies',
+    desc: 'Regular jazz and blues performances happen across the North Shore — check Gulu Gulu, local bars, and the Cabot in Beverly. This is a placeholder reminder to check local listings.',
+    url: 'https://www.eventbrite.com/d/ma--boston/jazz/',
+    recurrence: { type: 'nthweekday', day: 5, nth: 3 }, // 3rd Friday placeholder
+  },
+
+  // ═══════════════════════════════════════════
+  // CANTAB LOUNGE – 738 Massachusetts Ave, Cambridge, MA (Central Square)
+  // Live music 7 nights a week. Cash only, 21+.
+  // ═══════════════════════════════════════════
+
+  // Monday: Acoustic Open Mic with Geoff Bartley
+  {
+    id: 'cantab-mon',
+    name: 'Acoustic Open Mic',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'jazz',
+    time: '8:00 PM',
+    price: 'Free',
+    desc: 'Every Monday: songwriter open mic hosted by Geoff Bartley, a Central Square institution. All musicians welcome — sign up early for a slot. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 1 }, // Monday
+  },
+
+  // Tuesday: Bluegrass Pickin' Party
+  {
+    id: 'cantab-tue',
+    name: 'Bluegrass Pickin\' Party',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'jazz',
+    time: '8:00 PM',
+    price: '$6',
+    desc: 'Tuesday night live bluegrass series, one of the longest-running in New England. Lively jam session atmosphere — bring your instrument or just listen. Downstairs at Club Bohemia. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 2 }, // Tuesday
+  },
+
+  // Wednesday: Blues & Poetry Slam
+  {
+    id: 'cantab-wed',
+    name: 'Blues Night & Poetry Slam',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'jazz',
+    time: '8:00 PM',
+    price: '$6–$10',
+    desc: 'Wednesdays at the Cantab: live blues and R&B upstairs, Boston Poetry Slam in the basement (Club Bohemia) — one of the longest-running slams in the country. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 3 }, // Wednesday
+  },
+
+  // Thursday: Funk / Soul – Chicken Slacks & more
+  {
+    id: 'cantab-thu',
+    name: 'Funk & Soul Night',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'jazz',
+    time: '8:00 PM',
+    price: '$5',
+    desc: 'Thursday funk and soul night — home of the Chicken Slacks, a beloved Cambridge institution. Seven-piece funk/soul band with a multigenerational dance crowd. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 4 }, // Thursday
+  },
+
+  // Friday: Live Rock / Blues / R&B
+  {
+    id: 'cantab-fri',
+    name: 'Live Rock, Blues & R&B',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'rock',
+    time: '9:00 PM',
+    price: '$8–$12',
+    desc: 'Friday night live bands at the Cantab — rock, blues, R&B, soul, and more. Dance floor fills up fast. Since 1938, one of Cambridge\'s best live music bars. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 5 }, // Friday
+  },
+
+  // Saturday: Live Rock / Blues / R&B
+  {
+    id: 'cantab-sat',
+    name: 'Live Rock, Blues & R&B',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'rock',
+    time: '9:00 PM',
+    price: '$8–$12',
+    desc: 'Saturday live music at the Cantab. Expect rock, blues, R&B — crowd spanning all generations. Iconic dive bar energy in Central Square. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 6 }, // Saturday
+  },
+
+  // Sunday: Open Mic / Live Music
+  {
+    id: 'cantab-sun',
+    name: 'Sunday Sessions (Open Mic)',
+    venue: 'The Cantab Lounge',
+    address: '738 Massachusetts Ave, Cambridge, MA',
+    cat: 'jazz',
+    time: '7:00 PM',
+    price: 'Free–$5',
+    desc: 'Sunday open mic and live music at the Cantab. Blues and jazz sessions. Laid-back crowd, cheap beer. Cash only, 21+.',
+    url: 'https://www.thecantablounge.com/',
+    recurrence: { type: 'weekly', day: 0 }, // Sunday
+  },
+
+  // ═══════════════════════════════════════════
+  // ROXY'S ARCADE – 292 Massachusetts Ave, Cambridge, MA (Central Square)
+  // 21+ speakeasy arcade bar. No cover on DJ nights.
+  // ═══════════════════════════════════════════
+
+  // Monday: Drag Trivia
+  {
+    id: 'roxy-mon',
+    name: 'Drag Trivia w/ Missy Steak',
+    venue: "Roxy's Arcade",
+    address: '292 Massachusetts Ave, Cambridge, MA',
+    cat: 'dance',
+    time: '7:30 PM',
+    price: 'Free',
+    desc: 'Every Monday: drag trivia hosted by the fabulous Missy Steak. Vintage arcade games, craft cocktails, and prizes. 21+ speakeasy arcade bar in Central Square.',
+    url: 'https://roxysarcade.com/event-schedule',
+    recurrence: { type: 'weekly', day: 1 }, // Monday
+  },
+
+  // Wednesday: Karaoke
+  {
+    id: 'roxy-wed',
+    name: 'Karaoke Night',
+    venue: "Roxy's Arcade",
+    address: '292 Massachusetts Ave, Cambridge, MA',
+    cat: 'karaoke',
+    time: '7:00 PM',
+    price: 'Free',
+    desc: 'Wednesday karaoke at Roxy\'s Arcade — sing your heart out surrounded by nostalgic arcade games and craft cocktails. 21+ only.',
+    url: 'https://roxysarcade.com/event-schedule',
+    recurrence: { type: 'weekly', day: 3 }, // Wednesday
+  },
+
+  // 2nd Thursday: DJ KB Sweets
+  {
+    id: 'roxy-thu',
+    name: 'DJ KB Sweets Night',
+    venue: "Roxy's Arcade",
+    address: '292 Massachusetts Ave, Cambridge, MA',
+    cat: 'dance',
+    time: '9:00 PM',
+    price: 'No cover',
+    desc: '2nd Thursday of the month: DJ KB Sweets spins at the arcade bar. Dance, play vintage games, sip craft cocktails. 21+.',
+    url: 'https://roxysarcade.com/event-schedule',
+    recurrence: { type: 'nthweekday', day: 4, nth: 2 }, // 2nd Thursday
+  },
+
+  // Friday: DJ Night
+  {
+    id: 'roxy-fri',
+    name: 'DJ Night',
+    venue: "Roxy's Arcade",
+    address: '292 Massachusetts Ave, Cambridge, MA',
+    cat: 'dance',
+    time: '9:00 PM',
+    price: 'No cover',
+    desc: 'Friday DJ nights at Roxy\'s Arcade — no cover, vintage arcade games, craft cocktails, and dancing. 21+ speakeasy bar in Central Square.',
+    url: 'https://roxysarcade.com/event-schedule',
+    recurrence: { type: 'weekly', day: 5 }, // Friday
+  },
+
+  // Saturday: DJ Night
+  {
+    id: 'roxy-sat',
+    name: 'DJ Night',
+    venue: "Roxy's Arcade",
+    address: '292 Massachusetts Ave, Cambridge, MA',
+    cat: 'dance',
+    time: '9:00 PM',
+    price: 'No cover',
+    desc: 'Saturday DJ nights at Roxy\'s Arcade. No cover, open from noon. Best combo of arcade gaming and nightlife in Cambridge. 21+.',
+    url: 'https://roxysarcade.com/event-schedule',
+    recurrence: { type: 'weekly', day: 6 }, // Saturday
+  },
+];
+
+// ─── State ────────────────────────────────────────────────────────────
+const today = new Date();
+let curYear = today.getFullYear();
+let curMonth = today.getMonth();
+let activeFilters = new Set(Object.keys(CATS));
+let view = 'cal';
+
+// ─── Filter event occurrences in a given month ────────────────────────
+function getMonthEvents(year, month) {
+  const results = {}; // date string -> [events]
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayOfWeek = date.getDay(); // 0=Sun
+
+    for (const ev of EVENTS) {
+      if (!activeFilters.has(ev.cat)) continue;
+
+      let matches = false;
+
+      if (ev.dates) {
+        matches = ev.dates.includes(dateStr);
+      } else if (ev.recurrence) {
+        const r = ev.recurrence;
+        if (r.type === 'weekly') {
+          matches = dayOfWeek === r.day;
+        } else if (r.type === 'nthweekday') {
+          if (dayOfWeek === r.day) {
+            // find which occurrence this is
+            let count = 0;
+            for (let dd = 1; dd <= d; dd++) {
+              if (new Date(year, month, dd).getDay() === r.day) count++;
+            }
+            matches = count === r.nth;
+          }
+        }
+      }
+
+      if (matches) {
+        if (!results[dateStr]) results[dateStr] = [];
+        results[dateStr].push({ ...ev, dateStr });
+      }
+    }
+  }
+  return results;
+}
+
+// ─── Render Calendar ──────────────────────────────────────────────────
+function renderCalendar() {
+  const wrap = document.getElementById('calView');
+  const monthEvents = getMonthEvents(curYear, curMonth);
+
+  const firstDay = new Date(curYear, curMonth, 1).getDay();
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+  const prevDays = new Date(curYear, curMonth, 0).getDate();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  let html = `
+    <div class="weekdays">
+      ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="weekday-label">${d}</div>`).join('')}
+    </div>
+    <div class="calendar-grid">
+  `;
+
+  // Previous month filler
+  for (let i = 0; i < firstDay; i++) {
+    const dd = prevDays - firstDay + i + 1;
+    const pm = curMonth - 1; const py = pm < 0 ? curYear - 1 : curYear;
+    const pmo = pm < 0 ? 11 : pm;
+    const ds = `${py}-${String(pmo+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    html += `<div class="day-cell other-month"><span class="day-num">${dd}</span></div>`;
+  }
+
+  // This month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const evs = monthEvents[dateStr] || [];
+
+    // Deduplicate by name for display (e.g. multiple Yee karaoke entries)
+    const uniqueEvs = evs.filter((e, idx, arr) =>
+      arr.findIndex(x => x.id === e.id) === idx
+    );
+
+    // Group recurring daily events to avoid clutter (show only unique name per day)
+    const deduped = [];
+    const seen = new Set();
+    for (const e of uniqueEvs) {
+      const key = e.id.split('-')[0];
+      if (!seen.has(key)) { seen.add(key); deduped.push(e); }
+    }
+
+    const MAX_SHOW = 3;
+    const shown = deduped.slice(0, MAX_SHOW);
+    const extra = deduped.length - MAX_SHOW;
+
+    html += `<div class="day-cell${isToday?' today':''}">
+      <span class="day-num">${d}</span>
+      <div class="events-list">`;
+
+    for (const ev of shown) {
+      const col = CATS[ev.cat].color;
+      html += `<div class="event-chip" style="background:${col}22;color:${col};border:1px solid ${col}44"
+        onclick="openModal('${ev.id}','${dateStr}')">${ev.name}</div>`;
+    }
+
+    if (extra > 0) {
+      html += `<div class="more-events" onclick="openDayModal('${dateStr}')">+${extra} more</div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  // Next month filler
+  const cells = firstDay + daysInMonth;
+  const remainder = cells % 7 === 0 ? 0 : 7 - (cells % 7);
+  for (let i = 1; i <= remainder; i++) {
+    html += `<div class="day-cell other-month"><span class="day-num">${i}</span></div>`;
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+// ─── Render List ──────────────────────────────────────────────────────
+function renderList() {
+  const wrap = document.getElementById('listView');
+  const monthEvents = getMonthEvents(curYear, curMonth);
+  const sortedDates = Object.keys(monthEvents).sort();
+
+  if (sortedDates.length === 0) {
+    wrap.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">No events match your filters this month.</div>';
+    return;
+  }
+
+  let html = '';
+  for (const ds of sortedDates) {
+    const d = new Date(ds + 'T12:00:00');
+    const evs = monthEvents[ds].filter((e, idx, arr) =>
+      arr.findIndex(x => x.id === e.id) === idx
+    );
+    if (evs.length === 0) continue;
+
+    html += `<div class="list-month-group">
+      <div class="list-date-header">${d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric'})}</div>`;
+
+    for (const ev of evs) {
+      const col = CATS[ev.cat].color;
+      html += `<div class="list-event-row" onclick="openModal('${ev.id}','${ds}')">
+        <div class="list-event-dot" style="background:${col}"></div>
+        <div class="list-event-info">
+          <div class="list-event-name">${ev.name}</div>
+          <div class="list-event-meta">${ev.venue} · ${CATS[ev.cat].label}</div>
+        </div>
+        <div class="list-event-time">${ev.time.split('–')[0].trim()}</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  wrap.innerHTML = html;
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────
+function openModal(evId, dateStr) {
+  // Find base event
+  const ev = EVENTS.find(e => e.id === evId);
+  if (!ev) return;
+
+  const d = new Date(dateStr + 'T12:00:00');
+  const dateLabel = d.toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const col = CATS[ev.cat].color;
+
+  document.getElementById('mBadge').textContent = CATS[ev.cat].label;
+  document.getElementById('mBadge').style.cssText = `background:${col}22;color:${col};border:1px solid ${col}44`;
+  document.getElementById('mTitle').textContent = ev.name;
+  document.getElementById('mVenue').textContent = ev.venue;
+  document.getElementById('mDate').querySelector('span:last-child').textContent = dateLabel;
+  document.getElementById('mTime').querySelector('span:last-child').textContent = ev.time;
+  document.getElementById('mAddr').querySelector('span:last-child').textContent = ev.address;
+  document.getElementById('mPrice').querySelector('span:last-child').textContent = ev.price;
+  document.getElementById('mDesc').textContent = ev.desc;
+  document.getElementById('mLink').href = ev.url;
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── Legend / Filters ─────────────────────────────────────────────────
+function buildLegend() {
+  const wrap = document.getElementById('legend');
+  let html = '';
+  for (const [key, cat] of Object.entries(CATS)) {
+    html += `<div class="legend-item active" id="leg-${key}" onclick="toggleFilter('${key}')">
+      <div class="legend-dot" style="background:${cat.color}"></div>
+      ${cat.label}
+    </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function toggleFilter(key) {
+  if (activeFilters.has(key)) {
+    activeFilters.delete(key);
+    document.getElementById('leg-'+key).classList.remove('active');
+  } else {
+    activeFilters.add(key);
+    document.getElementById('leg-'+key).classList.add('active');
+  }
+  render();
+}
+
+// ─── Navigation ───────────────────────────────────────────────────────
+function changeMonth(dir) {
+  curMonth += dir;
+  if (curMonth > 11) { curMonth = 0; curYear++; }
+  if (curMonth < 0) { curMonth = 11; curYear--; }
+  updateMonthLabel();
+  render();
+}
+
+function updateMonthLabel() {
+  const d = new Date(curYear, curMonth, 1);
+  document.getElementById('monthLabel').textContent =
+    d.toLocaleDateString('en-US', {month:'long',year:'numeric'}).toUpperCase();
+}
+
+function setView(v) {
+  view = v;
+  document.getElementById('calView').style.display = v === 'cal' ? '' : 'none';
+  document.getElementById('listView').style.display = v === 'list' ? '' : 'none';
+  document.getElementById('calBtn').classList.toggle('active', v === 'cal');
+  document.getElementById('listBtn').classList.toggle('active', v === 'list');
+  render();
+}
+
+function render() {
+  if (view === 'cal') renderCalendar();
+  else renderList();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────
+buildLegend();
+updateMonthLabel();
+render();
+</script>
+</body>
+</html>
